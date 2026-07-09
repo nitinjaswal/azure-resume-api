@@ -1,0 +1,46 @@
+name: Deploy Azure Function App
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_FUNCTIONAPP_NAME: func-resume-nitin
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'ResumeApi'
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+
+      - name: Build
+        run: dotnet build '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}' --configuration Release --output ./output
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Function App
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: './output'
