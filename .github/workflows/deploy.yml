@@ -11,7 +11,7 @@ permissions:
 
 env:
   AZURE_FUNCTIONAPP_NAME: func-resume-nitin
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'ResumeApi'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: '8.0.x'
 
 jobs:
