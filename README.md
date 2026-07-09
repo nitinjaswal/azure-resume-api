@@ -1,6 +1,6 @@
 # Azure Resume API
 
-A serverless resume API built on Azure, submitted for the [Cloud Resume API Challenge — Azure track](https://cloudresumeapi.dev/azure/) by [Rishab Kumar](https://github.com/rishabkumar7). This implementation uses **Azure Functions + Cosmos DB**, deployed automatically via GitHub Actions using OIDC (no stored secrets).
+A serverless resume API built on Azure, submitted for the [Cloud Resume API Challenge — Azure track](https://cloudresumeapi.dev/azure/) by [Rishab Kumar](https://github.com/rishabkumar7). This implementation uses **Azure Functions + Cosmos DB**, deployed automatically via GitHub Actions using OIDC.
 
 ## Live Endpoint
 
@@ -8,7 +8,7 @@ A serverless resume API built on Azure, submitted for the [Cloud Resume API Chal
 GET https://func-resume-nitin-agb8gnafa9h8ggfd.centralindia-01.azurewebsites.net/api/resume
 ```
 
-Each request returns my resume as JSON (in [JSON Resume](https://jsonresume.org/schema/) format) and increments a `visitor_count` field.
+Each request returns my resume as JSON  and increments a `visitor_count` field.
 
 ## Architecture
 
@@ -110,20 +110,6 @@ Deployment is fully automated via `.github/workflows/deploy.yml`. On every push 
 
 No Azure credentials, passwords, or publish profiles are stored in GitHub — only three non-secret identifiers (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`), which identify *which* Azure identity to use but cannot themselves be used to authenticate as that identity.
 
-**Manual deployment (fallback):**
-```bash
-func azure functionapp publish func-resume-nitin
-```
-
-## Design Decisions
-
-A few deliberate choices worth calling out:
-
-- **JSON Resume schema** — used the existing open [JSON Resume](https://jsonresume.org/schema/) standard for the document shape instead of inventing a custom one.
-- **Partition key `/id`** — for a single-document, low-traffic API, partitioning doesn't meaningfully affect performance. `/id` was chosen because it's a sensible, defensible default when there's no real scaling requirement to design around.
-- **Visitor count via simple read-then-write** — deliberately skipped optimistic concurrency (ETags) or a stored procedure for the increment, since expected traffic (a handful of views a day) makes the race-condition risk negligible. Documented here as a conscious trade-off, not an oversight.
-- **Typed C# model instead of `dynamic`** — reading into a strongly-typed `Resume` class (rather than deserializing into `dynamic`) keeps Cosmos DB's internal system properties (`_rid`, `_etag`, `_ts`, etc.) out of the public API response.
-- **OIDC over publish profile** — chose federated identity authentication for CI/CD instead of the simpler publish-profile method, to avoid storing any long-lived deployment credential in GitHub.
 
 ## Tech Stack
 
@@ -131,12 +117,6 @@ A few deliberate choices worth calling out:
 - Azure Cosmos DB (Core/SQL API)
 - Azure Functions (Consumption plan)
 - GitHub Actions (OIDC-based CI/CD)
-
-## Reference
-
-Built as a submission to the [Cloud Resume API Challenge — Azure track](https://cloudresumeapi.dev/azure/), created by [Rishab Kumar](https://github.com/rishabkumar7). The challenge description and requirements this project follows are documented there.
-
-## Author
 
 **Nitin Jaswal** — Senior Software Engineer
 [LinkedIn](https://www.linkedin.com/in/nitin-jaswal)
